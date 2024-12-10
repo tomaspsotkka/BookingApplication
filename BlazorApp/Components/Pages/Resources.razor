@@ -1,0 +1,67 @@
+@page "/Resources"
+@using BlazorApp.ServiceInterfaces
+@using DTOs
+@inject IResourceService ResourceService
+
+<h3>Resources</h3>
+
+@if (!string.IsNullOrEmpty(msg))
+{
+    <div>
+        <span>@msg</span>
+    </div>
+}
+@if (resources == null)
+{
+    <span>Loading...</span>
+}
+else if (!resources.Any())
+{
+    <span>No resources found</span>
+}
+else
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Resource ID</th>
+            <th>Name</th>
+            <th>Quantity</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var resource in resources)
+        {
+            <tr>
+                <td>@resource.Id</td>
+                <td>@resource.Name</td>
+                <td>@resource.Quantity</td>
+            </tr>
+        }
+        </tbody>
+    </table>    
+}
+
+
+@code {
+    private IEnumerable<ResourceDto>? resources;
+    private string msg = "";
+    
+    protected override async Task OnInitializedAsync()
+    {
+        msg = "";
+        try
+        {
+            resources = await ResourceService.GetManyResourcesAsync();
+            
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            msg = e.Message;
+        }
+
+
+
+    }
+}

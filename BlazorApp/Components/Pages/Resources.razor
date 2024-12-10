@@ -1,51 +1,101 @@
-@page "/Resources"
+@page "/resources"
+@using System.Collections
 @using BlazorApp.ServiceInterfaces
+@using Entities
 @using DTOs
 @inject IResourceService ResourceService
+@inject IBookingService BookingService
+@using BlazorApp.Components.UIComponents
+@inject NavigationManager navMgr
 
 <h3>Resources</h3>
 
-@if (!string.IsNullOrEmpty(msg))
-{
-    <div>
-        <span>@msg</span>
-    </div>
-}
 @if (resources == null)
 {
     <span>Loading...</span>
 }
-else if (!resources.Any())
-{
-    <span>No resources found</span>
-}
 else
 {
-    <table class="table">
+    <table class="table table-striped table-hover table-bordered">
         <thead>
         <tr>
-            <th>Resource ID</th>
             <th>Name</th>
             <th>Quantity</th>
+            <th></th>
         </tr>
         </thead>
         <tbody>
         @foreach (var resource in resources)
         {
             <tr>
-                <td>@resource.Id</td>
                 <td>@resource.Name</td>
                 <td>@resource.Quantity</td>
+                <td>
+                    <button class="btn btn-primary" @onclick="() => ShowModal(resource.Id, resource.Name)">Book</button>
+                </td>
             </tr>
         }
         </tbody>
     </table>    
 }
 
+@if (isBookingModalOpen)
+{
+    <div class="modal-backdrop modal-backdrop-custom">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header">
+                <h4 class="modal-title">@(!bookingConfirmed ? $"Book {currentResourceName}" : "Booking Confirmation")</h4>
+                <button class="btn btn-secondary" @onclick="HideModal">Close</button>
+            </div>
+            <div class="modal-body">
+                @if (!bookingConfirmed)
+                {
+                    <EditForm Model="this">
+                        <div class="form-group">
+                            <label for="startDate">Start Date:</label>
+                            <input type="date" class="form-control" @bind="startDate" />
+                    
+                            <label for="endDate">End Date:</label>
+                            <input type="date" class="form-control" @bind="endDate" />
+                    
+                            <label for="quantity">Quantity:</label>
+                            <input type="number" class="form-control" @bind="quantity" />
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-primary" @onclick="ConfirmBooking">Confirm</button>
+                        </div>
+                    </EditForm>
+                }
+                else
+                {
+                    if (string.IsNullOrEmpty(msg))
+                    {
+                        <p class="success-message">Your booking was successful!</p>
+                        <button class="btn btn-primary" @onclick="Proceed">Okay</button>
+                    }
+                    else
+                    {
+                        <p class="error-message">@msg</p>
+                        <button class="btn btn-secondary" @onclick="HideModal">Close</button>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+}
 
 @code {
-    private IEnumerable<ResourceDto>? resources;
+    private ICollection<Booking> bookings;
+    private ICollection<Resource> resources;
+    private bool isBookingModalOpen = false;
+    private DateOnly startDate = DateOnly.FromDateTime(DateTime.Today);
+    private DateOnly endDate = DateOnly.FromDateTime(DateTime.Today.AddDays(1));
+    private int quantity = 1;
+    private int bookingResourceId;
+    private string currentResourceName;
+    private bool bookingConfirmed = false;
     private string msg = "";
+
     
     protected override async Task OnInitializedAsync()
     {
@@ -60,8 +110,44 @@ else
             Console.WriteLine(e);
             msg = e.Message;
         }
+    }
 
-
-
+    private void ShowModal(int resourceId, string resourceName)
+    {
+        bookingResourceId = resourceId;
+        currentResourceName = resourceName;
+        isBookingModalOpen = true;
+    }
+    
+    private void HideModal()
+    {
+        isBookingModalOpen = false;
+        navMgr.NavigateTo("/resources", forceLoad: true);
+    }
+    
+    private async Task ConfirmBooking()
+    {
+        try
+        {
+            await BookingService.CreateBookingAsync(new CreateBookingDto(
+                startDate,
+                endDate,
+                quantity,
+                bookingResourceId
+            ));
+            bookingConfirmed = true;
+        }
+        catch (Exception e)
+        {
+            bookingConfirmed = true; 
+            msg = "Resource quantity not available.";
+            Console.WriteLine(e.Message);
+        }
+    }
+    
+    private void Proceed()
+    {
+        bookingConfirmed = false;
+        navMgr.NavigateTo("/resources", forceLoad: true);
     }
 }

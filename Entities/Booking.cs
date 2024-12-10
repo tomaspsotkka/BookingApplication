@@ -18,5 +18,5 @@ public class Booking
         ResourceId = resourceId;
     }
 
-    private Booking(){}
+    public Booking(){}
 }

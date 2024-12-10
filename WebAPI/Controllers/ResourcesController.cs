@@ -9,7 +9,7 @@ using RepositoryContracts;
 namespace WebAPI.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("[controller]")]
 public class ResourcesController : ControllerBase
 {
     private readonly IResourceLogic resourceLogic;
@@ -20,11 +20,13 @@ public class ResourcesController : ControllerBase
     }
 
     [HttpGet("resources")]
-    public async Task<ActionResult<IEnumerable<ResourceDto>>> GetManyResources()
+    public async Task<ActionResult<ICollection>> GetManyResourcesAsync([FromQuery] string? name, [FromQuery] int? quantity)
     {
         try
         {
-            var resources = await resourceLogic.GetAllResourcesAsync();
+            ResourceDto parameters = new(name, quantity);
+            ICollection resources = await resourceLogic.GetAllResourcesAsync(parameters);
+            
             return Ok(resources);
         }
         catch (Exception e)

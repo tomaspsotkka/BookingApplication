@@ -1,8 +1,9 @@
+using System.Collections;
 using DTOs;
 
 namespace BusinessLogic.Interfaces;
 
 public interface IResourceLogic
 {
-    Task<IEnumerable<ResourceDto>> GetAllResourcesAsync();
+    Task<ICollection> GetAllResourcesAsync(ResourceDto parameters);
 }

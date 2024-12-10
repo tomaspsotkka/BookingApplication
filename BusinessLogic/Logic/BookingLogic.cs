@@ -1,4 +1,5 @@
 using BusinessLogic.Interfaces;
+using BusinessLogic.Util;
 using DTOs;
 using Entities;
 using RepositoryContracts;
@@ -18,23 +19,45 @@ public class BookingLogic : IBookingLogic
     
     public async Task<CreateBookingDto> CreateBookingAsync(CreateBookingDto request)
     {
-        bool isAvailable = await bookingRepository.IsResourceAvailableAsync(request.ResourceId, request.DateFrom,
-            request.DateTo, request.BookedQuantity);
-
-        if (!isAvailable)
+        BookingHelper.ValidateBooking(request);
+        
+        var resource = await resourceRepository.GetResourceByIdAsync(request.ResourceId);
+        if (resource == null)
         {
-            throw new InvalidOperationException("Requested quantity is not available for the requested period.");
+            throw new Exception("Resource not found");
         }
-        
-        Booking booking = new(request.DateFrom, request.DateTo, request.BookedQuantity, request.ResourceId);
-        Booking created = await bookingRepository.AddAsync(booking);
-        
+
+        var existingBookings = await bookingRepository.GetBookingsByResourceIdAsync(request.ResourceId);
+        int bookedQuantity = BookingHelper.CalculateBookedQuantity(existingBookings, request.DateFrom, request.DateTo);
+
+        if (request.BookedQuantity > (resource.Quantity - bookedQuantity))
+        {
+            throw new Exception("The quantity is not available for requested period.");
+        }
+
+        if (BookingHelper.IsConflict(existingBookings, request.DateFrom, request.DateTo, bookedQuantity, resource.Quantity))
+        {
+            throw new Exception("There is a conflict between bookings in requested period.");
+        }
+
+        var newBooking = new Booking
+        {
+            ResourceId = request.ResourceId,
+            BookedQuantity = request.BookedQuantity,
+            DateFrom = request.DateFrom,
+            DateTo = request.DateTo
+        };
+
+        var createdBooking = await bookingRepository.AddAsync(newBooking);
+        Console.WriteLine($"EMAIL SENT TO admin@admin.com FOR CREATED BOOKING WITH ID {createdBooking.Id}");
+
         return new CreateBookingDto
         {
-            DateFrom = created.DateFrom,
-            DateTo = created.DateTo,
-            BookedQuantity = created.BookedQuantity,
-            ResourceId = created.ResourceId
+            DateFrom = createdBooking.DateFrom,
+            DateTo = createdBooking.DateTo,
+            BookedQuantity = createdBooking.BookedQuantity,
+            ResourceId = createdBooking.ResourceId
         };
     }
+    
 }

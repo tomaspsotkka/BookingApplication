@@ -1,8 +1,11 @@
+using System.Collections;
+using DTOs;
 using Entities;
 
 namespace RepositoryContracts;
 
 public interface IResourceRepository
 {
-    IQueryable<Resource> GetMany();
+    Task<ICollection> GetManyAsync(ResourceDto parameters);
+    Task<Resource> GetResourceByIdAsync(int id);
 }

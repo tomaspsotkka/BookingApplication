@@ -10,12 +10,15 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddScoped(sp => new HttpClient
 {
-    BaseAddress = new Uri("https://localhost:5226")
+    BaseAddress = new Uri("http://localhost:5226/")
 });
-
+builder.Services.AddHttpClient<IBookingService, HttpBookingService>(client =>
+{
+    client.BaseAddress = new Uri("http://localhost:5226/");
+});
 builder.Services.AddHttpClient<IResourceService, HttpResourceService>(client =>
 {
-    client.BaseAddress = new Uri("https://localhost:5226");
+    client.BaseAddress = new Uri("http://localhost:5226/");
 });
 
 

@@ -1,3 +1,4 @@
+using System.Collections;
 using BusinessLogic.Interfaces;
 using DTOs;
 using Microsoft.EntityFrameworkCore;
@@ -14,16 +15,8 @@ public class ResourceLogic : IResourceLogic
         this.resourceRepository = resourceRepository;
     }
     
-    public async Task<IEnumerable<ResourceDto>> GetAllResourcesAsync()
+    public Task<ICollection> GetAllResourcesAsync(ResourceDto parameters)
     {
-        var resources = await resourceRepository.GetMany().ToListAsync();
-        var resourceDtos = resources.Select(resource => new ResourceDto
-        {
-            Id = resource.Id,
-            Name = resource.Name,
-            Quantity = resource.Quantity
-        });
-
-        return await Task.FromResult(resourceDtos);
+        return resourceRepository.GetManyAsync(parameters);
     }
 }

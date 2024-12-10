@@ -1,3 +1,5 @@
+using System.Collections;
+using DTOs;
 using Entities;
 using RepositoryContracts;
 
@@ -13,9 +15,21 @@ public class EfcResourceRepository : IResourceRepository
         this.ctx = ctx;
     }
     
-    public IQueryable<Resource> GetMany()
+    public Task<ICollection> GetManyAsync(ResourceDto parameters)
     {
-        return ctx.Resources.AsQueryable();
+        IQueryable<Resource> query = ctx.Resources.AsQueryable();
+        if (!string.IsNullOrEmpty(parameters.Name))
+        {
+            query = query.Where(q => q.Name.ToLower().Contains(parameters.Name.ToLower()));
+        }
+
+        if (parameters.Quantity != null)
+        {
+            query = query.Where(q => q.Quantity == parameters.Quantity);
+        }
+
+        List<Resource> resources = query.ToList();
+        return Task.FromResult<ICollection>(resources);
     }
 
     public async Task<Resource> GetResourceByIdAsync(int id)

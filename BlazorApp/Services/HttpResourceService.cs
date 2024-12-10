@@ -1,7 +1,9 @@
+using System.Collections;
 using System.Text.Json;
 using BlazorApp.Components.Pages;
 using BlazorApp.ServiceInterfaces;
 using DTOs;
+using Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BlazorApp.Services;
@@ -15,23 +17,17 @@ public class HttpResourceService : IResourceService
         this.client = client;
     }
 
-    /*public async Task<IEnumerable<ResourceDto>> GetManyResourcesAsync()
+    public async Task<ICollection<Resource>> GetManyResourcesAsync(string? name = null, int? quantity = null)
     {
-        var resources = await client.GetFromJsonAsync<IEnumerable<ResourceDto>>("Resources/all");
-        return new <IEnumerable<ResourceDto>>(resources!);
-    }*/
-
-    public async Task<IEnumerable<ResourceDto>> GetManyResourcesAsync(string? nameContains = null, int? quantity = null)
-    {
-        string uri = "/resources";
-        if (!string.IsNullOrEmpty(nameContains))
+        string uri = "Resources/resources";
+        if (!string.IsNullOrEmpty(name))
         {
-            uri += $"?name={nameContains}";
+            uri += $"?name={name}";
         }
 
         if (quantity.HasValue)
         {
-            uri += string.IsNullOrEmpty(nameContains) ? $"?quantity={quantity}" : $"&quantity={quantity}";
+            uri += string.IsNullOrEmpty(name) ? $"?quantity={quantity}" : $"&quantity={quantity}";
         }
 
         HttpResponseMessage response = await client.GetAsync(uri);
@@ -41,7 +37,7 @@ public class HttpResourceService : IResourceService
             throw new Exception(content);
         }
 
-        IEnumerable<ResourceDto> resources = JsonSerializer.Deserialize<IEnumerable<ResourceDto>>(content,
+        ICollection<Resource> resources = JsonSerializer.Deserialize<ICollection<Resource>>(content,
             new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true

@@ -21,6 +21,13 @@ public class EfcBookingRepository : IBookingRepository
         return entityEntry.Entity;
     }
 
+    public Task<IEnumerable<Booking>> GetBookingsByResourceIdAsync(int resourceId)
+    {
+        IQueryable<Booking> bookings = ctx.Bookings.AsQueryable();
+        bookings = bookings.Where(b => b.ResourceId == resourceId);
+        return Task.FromResult(bookings.AsEnumerable());
+    }
+    
     public async Task<bool> IsResourceAvailableAsync(int resourceId, DateOnly dateFrom, DateOnly dateTo, int quantity)
     {
         var bookings = await ctx.Bookings //overlapping bookings

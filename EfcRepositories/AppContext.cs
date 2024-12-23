@@ -1,3 +1,4 @@
+using DTOs;
 using Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,7 +11,7 @@ public class AppContext : DbContext
     
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseSqlite(@"Data Source = C:\Users\psotk\RiderProjects\BookingApplication\EfcRepositories\bookingApp.db"); 
+        optionsBuilder.UseSqlite($"Data Source=/Users/tomaspsotkka/RiderProjects/BookingApplication/EfcRepositories/bookingApp.db"); 
     }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -24,5 +25,12 @@ public class AppContext : DbContext
         modelBuilder.Entity<Resource>().HasKey(r => r.Id);
         modelBuilder.Entity<Resource>().Property(r => r.Name).IsRequired();
         modelBuilder.Entity<Resource>().Property(r => r.Quantity).IsRequired();
+        
+        modelBuilder.Entity<Resource>().HasData(
+            new ResourceDto { Id = 1, Name = "Projector", Quantity = 10 },
+            new ResourceDto { Id = 2, Name = "Laptop", Quantity = 5 },
+            new ResourceDto { Id = 3, Name = "Whiteboard", Quantity = 2 }
+        );
+        
     }
 }

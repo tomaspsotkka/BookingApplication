@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace EfcRepositories.Migrations
 {
     /// <inheritdoc />
@@ -45,6 +47,16 @@ namespace EfcRepositories.Migrations
                         principalTable: "Resources",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.InsertData(
+                table: "Resources",
+                columns: new[] { "Id", "Name", "Quantity" },
+                values: new object[,]
+                {
+                    { 1, "Projector", 10 },
+                    { 2, "Laptop", 5 },
+                    { 3, "Whiteboard", 2 }
                 });
 
             migrationBuilder.CreateIndex(

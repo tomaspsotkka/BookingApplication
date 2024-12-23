@@ -58,6 +58,26 @@ namespace EfcRepositories.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Resources");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Projector",
+                            Quantity = 10
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Laptop",
+                            Quantity = 5
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Whiteboard",
+                            Quantity = 2
+                        });
                 });
 
             modelBuilder.Entity("Entities.Booking", b =>
